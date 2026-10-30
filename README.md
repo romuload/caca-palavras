@@ -12,4 +12,6 @@ gerada a cada partida, em 8 direções (o original de 2007 tinha 25×18). O joga
   onde a mesma grade fica em pé (14×16).
 - Recordes (melhor tempo e pontos) e a preferência de som ficam salvos no navegador (`localStorage`).
 - Grade desenhada em SVG (`js/jogo.js`); palavras e regras em `js/palavras.js`.
+- Ao publicar mudanças em CSS ou JS, aumente o `?v=` dos links no `index.html` para os navegadores
+  não ficarem com a versão antiga em cache.
 - `conteudo_extraido/` documenta a configuração e os textos recuperados do SWF original.
