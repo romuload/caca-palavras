@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Caça-Palavras – REPAR 30 anos</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Roboto+Condensed:wght@400;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/jogo.css">
+</head>
+<body>
+
+<div class="jogo">
+  <header class="topo">
+    <h1 class="titulo"><span>Jogo</span> Caça-Palavras</h1>
+    <div class="placares">
+      <div class="placar" id="placar-tempo">
+        <span class="placar-rotulo">Tempo</span>
+        <strong id="tempo">5:00</strong>
+      </div>
+      <div class="placar" aria-live="polite">
+        <span class="placar-rotulo">Pontos</span>
+        <strong><span id="pontos">0</span>pts</strong>
+        <span class="placar-delta" id="placar-delta"></span>
+      </div>
+    </div>
+  </header>
+
+  <main class="palco" id="palco">
+    <div class="quadro quadro-grade">
+      <svg class="grade" id="grade" role="img" aria-label="Grade de letras do caça-palavras"></svg>
+    </div>
+    <aside class="quadro quadro-banco">
+      <h2>Palavras <span id="contagem">0/12</span></h2>
+      <ul class="banco" id="banco"></ul>
+    </aside>
+    <section class="aviso" id="aviso" hidden></section>
+  </main>
+
+  <div class="barra">
+    <button type="button" class="botao-som" id="btn-som" aria-pressed="true">♪ Som</button>
+    <button type="button" class="botao verde" id="btn-reiniciar">Reiniciar</button>
+  </div>
+
+  <footer class="rodape">
+    <img src="images/selo_repar30.svg" width="355" height="88" alt="Refinaria Presidente Getúlio Vargas 30 anos" class="logo-selo">
+    <img src="images/petrobras.svg" width="328" height="64" alt="Petrobras" class="logo-petrobras">
+  </footer>
+</div>
+
+<script src="js/palavras.js"></script>
+<script src="js/jogo.js"></script>
+</body>
+</html>

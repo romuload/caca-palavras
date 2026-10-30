@@ -1,0 +1,24 @@
+Textos estáticos (DefineText), na ordem do arquivo:
+
+2007 - Petrobras | Repar. Copyright - Todos os direitos reservados.
+carregando...
+Tempo:
+Pontos:
+REINICIAR
+CLIQUE PARA JOGAR
+PARABÉNS!
+Tente superar seu tempo / na próxima tentativa.
+SUA PONTUAÇÃO:
+VOCÊ PERDEU!
+Tente ser mais rápido na / próxima tentativa.
+
+Campos dinâmicos (DefineEditText): field (letra da grade), field (palavra do banco), timer, score.
+
+Rótulos de quadro: Starting Screen, start, start2, Win, Lose.
+Estados da letra: Default, Drag Selected, Found Selected.
+
+palavras.txt:
+&words=PETROLEO|REPAR|OLEODUTO|MODERNIZACAO|PETROBRAS|ABASTECIMENTO|TECNOLOGIA|CRAQUEAMENTO|BIOCOMBUSTIVEL|DESTILACAO|QUALIFICACAO|SEGURANCA&
+
+Botão da tela de vitória: getURL("default.asp?acao=play")
+Envio ao servidor (quadro final): LoadVars POST grava.asp { pontuacao: score, acertos: 0, erros: 0, tempo: 0 }
