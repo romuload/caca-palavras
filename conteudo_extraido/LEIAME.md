@@ -13,8 +13,8 @@ e textos decodificados das fontes + registros DefineText. Layout conferido rodan
 | Variável no SWF            | Valor            | Na versão nova                              |
 |----------------------------|------------------|---------------------------------------------|
 | `time_limit_val`           | 300000 ms        | 5 minutos                                   |
-| `grid_columns_val`         | 25               | 25 colunas (18 no celular em pé)            |
-| `grid_rows_val`            | 18               | 18 linhas (25 no celular em pé)             |
+| `grid_columns_val`         | 25               | 25 colunas; 18 em telas médias; 14 em celulares estreitos |
+| `grid_rows_val`            | 18               | 18 linhas; 25 em telas médias; 20 em celulares estreitos  |
 | `words_per_puzzle_val`     | 12               | 12 (todas as palavras de `palavras.txt`)    |
 | `database_file_val`        | `palavras.txt`   | `js/palavras.js`                            |
 | `correct_points_val`       | 20               | +20 por palavra (máximo 240)                |

@@ -7,6 +7,9 @@
   --vermelho-erro: #c0392b;
   --azul: #0b3a6e;
   --cinza-texto: #333;
+  --tecla: #e2f0e6;
+  --tecla-sombra: #b8d5c1;
+  --verde-selecao: #1e6b3c;
   --branco: #fff;
   --fonte: "Roboto Condensed", "Arial Narrow", Arial, sans-serif;
 }
@@ -128,38 +131,58 @@ body {
   display: block;
   width: 100%;
   height: auto;
+  /* em telas baixas a grade encolhe pela altura para caber sem rolar a página */
+  max-height: calc(100vh - 230px);
+  min-height: 300px;
   touch-action: none;
   user-select: none;
   -webkit-user-select: none;
   cursor: pointer;
 }
 
+/* Teclas: cada letra num quadrado verde-claro com sombra embaixo */
+.tecla  { fill: var(--tecla); transition: fill .15s; }
+.sombra { fill: var(--tecla-sombra); transition: fill .15s; }
 .letra {
   font-family: var(--fonte);
-  font-size: 25px;
-  fill: #1f2d24;
+  font-size: 22px;
+  font-weight: 700;
+  fill: #1d3a2a;
   text-anchor: middle;
   dominant-baseline: central;
   pointer-events: none;
+  transition: fill .15s;
 }
-.letra.na-selecao { fill: var(--branco); font-weight: 700; }
-.letra.achada { font-weight: 700; }
 
-.marca { transition: opacity .3s; }
-.marca.achada { animation: marca-entra .35s ease-out; }
-.marca.selecao { fill: rgba(22, 40, 30, .78); }
-.marca.ancora  { fill: rgba(22, 40, 30, .35); }
-.marca.errada  { fill: rgba(192, 57, 43, .55); animation: some .6s ease-in forwards; }
+.celula.achada .tecla  { fill: var(--cor); }
+.celula.achada .sombra { fill: color-mix(in srgb, var(--cor) 60%, #1d3a2a); }
+.celula.achada { animation: tecla-achada .35s ease-out; }
+
+/* Seleção (arrasto e primeiro toque): verde escuro com letra branca, como no anexo de referência */
+.celula.na-selecao .tecla,
+.celula.ancora .tecla      { fill: var(--verde-selecao); }
+.celula.na-selecao .sombra,
+.celula.ancora .sombra     { fill: #0f3d22; }
+.celula.na-selecao .letra,
+.celula.ancora .letra      { fill: var(--branco); }
+
+.celula.errada .tecla  { fill: #d9574a; }
+.celula.errada .sombra { fill: #8e2a20; }
+.celula.errada .letra  { fill: var(--branco); }
+
+@keyframes tecla-achada {
+  50% { transform: translateY(-2px); }
+}
+.celula { transform-box: fill-box; }
+
 .marca.faltou  {
-  fill: rgba(192, 57, 43, .08);
+  fill: none;
   stroke: #e00;
   stroke-width: 3;
   stroke-dasharray: 100;
   stroke-dashoffset: 100;
   animation: contorno .7s ease-out forwards;
 }
-@keyframes marca-entra { from { opacity: 0; } to { opacity: 1; } }
-@keyframes some { 60% { opacity: 1; } to { opacity: 0; } }
 @keyframes contorno { to { stroke-dashoffset: 0; } }
 
 .esperando .quadro-grade svg { filter: blur(3px); opacity: .6; }
@@ -311,10 +334,38 @@ button:focus-visible { outline: 2px solid var(--azul); outline-offset: 2px; }
 
 /* ---------- telas médias: banco embaixo da grade ---------- */
 
-@media (max-width: 820px) {
+/* Abaixo de 900px a coluna lateral de 200px espremia a grade; a lista passa para baixo,
+   em colunas de largura igual que se ajustam à largura disponível. */
+@media (max-width: 899px) {
   .palco { grid-template-columns: 1fr; }
-  .banco { flex-direction: row; flex-wrap: wrap; gap: 4px 6px; }
+  .grade { max-height: none; min-height: 0; }
+  .banco {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 4px 6px;
+  }
   .banco li { font-size: 15px; background: #f1f4f2; padding: 4px 8px; }
+}
+
+/* ---------- celular deitado: pouca altura, lista volta para o lado ---------- */
+
+@media (orientation: landscape) and (max-height: 520px) {
+  body { padding: 0; align-items: stretch; }
+  .jogo { max-width: none; padding: 6px 10px; }
+  .topo { margin-bottom: 6px; align-items: center; }
+  .titulo { font-size: 24px; }
+  .titulo span { display: inline; font-size: 14px; }
+  .placar { min-width: 70px; padding: 2px 8px; }
+  .placar-rotulo { font-size: 10px; }
+  .placar strong { font-size: 20px; }
+  .palco { grid-template-columns: 1fr 170px; padding: 6px; gap: 6px; }
+  .quadro-grade { padding: 4px; }
+  .grade { max-height: calc(100vh - 70px); min-height: 0; }
+  .quadro-banco { padding: 8px; }
+  .banco { display: flex; flex-direction: column; gap: 1px; }
+  .banco li { font-size: 13px; background: none; padding: 1px 4px; }
+  .barra { padding-top: 6px; }
+  .rodape { display: none; }
 }
 
 /* ---------- celular ---------- */
@@ -339,8 +390,13 @@ button:focus-visible { outline: 2px solid var(--azul); outline-offset: 2px; }
   .palco { padding: 6px; gap: 6px; }
   .quadro { border-radius: 10px; }
   .quadro-grade { padding: 4px; }
-  .quadro-banco { padding: 10px; }
-  .letra { font-size: 27px; }
+  .quadro-banco { padding: 8px 10px 10px; }
+  .quadro-banco h2 { font-size: 13px; margin-bottom: 6px; }
+  /* Sem caixa alta as palavras ficam mais estreitas: 3 colunas iguais a partir de ~360px, 2 abaixo disso */
+  .banco { grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 3px 4px; }
+  .banco li { font-size: 14px; text-transform: none; padding: 3px 6px; gap: 5px; }
+  .banco li::before { width: 8px; height: 8px; }
+  .letra { font-size: 24px; }
   .aviso-cartao { padding: 18px 16px 16px; }
   .aviso h2 { font-size: 24px; }
   .botao { padding: 11px 18px; }
@@ -348,8 +404,15 @@ button:focus-visible { outline: 2px solid var(--azul); outline-offset: 2px; }
   .rodape .logo-petrobras { height: 24px; }
 }
 
+/* celulares bem estreitos: título numa linha só */
+@media (max-width: 360px) {
+  .titulo { font-size: 25px; white-space: nowrap; }
+  .placares { gap: 4px; }
+  .placar { min-width: 62px; }
+  .placar strong { font-size: 21px; }
+}
+
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation: none !important; transition: none !important; }
   .marca.faltou { stroke-dashoffset: 0; }
-  .marca.errada { opacity: 0; }
 }

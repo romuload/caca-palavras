@@ -21,5 +21,8 @@ const REGRAS = {
   linhas: 18,           // grid_rows_val
   tempo: 5 * 60,        // time_limit_val = 300000 ms
   pontosAcerto: 20,     // correct_points_val
-  pontosErro: 0         // incorrect_points_val
+  pontosErro: 0,        // incorrect_points_val
+  // Grade menor para celulares estreitos, para cada letra continuar com um tamanho bom
+  // de tocar. 14 colunas é o mínimo: BIOCOMBUSTIVEL tem 14 letras.
+  pequena: { colunas: 14, linhas: 20 }
 };

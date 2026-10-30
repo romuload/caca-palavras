@@ -5,7 +5,8 @@
   const CHAVE_RECORDE = "repar-caca-palavras-recorde";
   const CHAVE_SOM = "repar-caca-palavras-som";
   const CELULA = 40;    // tamanho da célula em unidades do viewBox
-  const RAIO = 17;      // meia altura da marca em volta da palavra
+  const RAIO = 19;      // meia altura do contorno vermelho das palavras que faltaram
+  const TECLA = 35;     // lado da tecla de cada letra (o resto da célula é o espaço entre teclas)
   const SVG_NS = "http://www.w3.org/2000/svg";
   const DIRECOES = [[0, 1], [1, 0], [1, 1], [-1, 1], [0, -1], [-1, 0], [-1, -1], [1, -1]]; // [dLinha, dColuna]
   const CORES = ["#f2c14e", "#7cc4a4", "#8fb8e8", "#f29e7d", "#b9a3e3", "#a8d672",
@@ -164,13 +165,17 @@
     return { letras, posicoes };
   }
 
-  // No celular em pé a grade fica em pé também: 18 colunas × 25 linhas.
-  const RETRATO = window.matchMedia("(max-width: 720px) and (orientation: portrait)");
+  // O formato da grade acompanha a largura disponível: a original 25×18 quando cabe,
+  // em pé (18×25) em telas médias e 14×20 nos celulares estreitos.
+  function dimensoes() {
+    const largura = el.grade.parentElement.clientWidth;
+    if (largura >= 560) return [REGRAS.colunas, REGRAS.linhas];
+    if (largura >= 400) return [REGRAS.linhas, REGRAS.colunas];
+    return [REGRAS.pequena.colunas, REGRAS.pequena.linhas];
+  }
 
   function gerarGrade() {
-    const retrato = RETRATO.matches;
-    estado.colunas = retrato ? REGRAS.linhas : REGRAS.colunas;
-    estado.linhas = retrato ? REGRAS.colunas : REGRAS.linhas;
+    [estado.colunas, estado.linhas] = dimensoes();
     let grade = null;
     while (!grade) grade = tentarMontar();
     estado.letras = grade.letras;
@@ -181,8 +186,8 @@
 
   function centro(r, c) { return { x: c * CELULA + CELULA / 2, y: r * CELULA + CELULA / 2 }; }
 
-  // Cápsula arredondada da primeira à última letra.
-  function marca(a, b, classe, pai, cor) {
+  // Contorno arredondado da primeira à última letra (palavras que faltaram, no fim do tempo).
+  function marca(a, b, classe, pai) {
     const p1 = centro(a.r, a.c), p2 = centro(b.r, b.c);
     const comp = Math.hypot(p2.x - p1.x, p2.y - p1.y);
     const ang = Math.atan2(p2.y - p1.y, p2.x - p1.x) * 180 / Math.PI;
@@ -192,23 +197,25 @@
       pathLength: 100, // o contorno animado de "faltou" usa dasharray 100
       transform: `translate(${(p1.x + p2.x) / 2} ${(p1.y + p2.y) / 2}) rotate(${ang})`
     };
-    if (cor) attrs.fill = cor;
     return noSvg("rect", attrs, pai);
   }
 
+  // Cada letra é uma tecla: sombra embaixo, tecla verde-clara e a letra por cima.
   function desenharGrade() {
     const svg = el.grade;
     svg.innerHTML = "";
     svg.setAttribute("viewBox", `0 0 ${estado.colunas * CELULA} ${estado.linhas * CELULA}`);
     const camadas = {
-      achadas: noSvg("g", {}, svg),
-      selecao: noSvg("g", {}, svg),
-      letras: noSvg("g", {}, svg)
+      teclas: noSvg("g", {}, svg),
+      marcas: noSvg("g", {}, svg)
     };
     estado.letras.forEach((linha, r) => linha.forEach((letra, c) => {
       const { x, y } = centro(r, c);
-      const t = noSvg("text", { class: "letra", x, y, "data-r": r, "data-c": c }, camadas.letras);
-      t.textContent = letra;
+      const g = noSvg("g", { class: "celula", "data-r": r, "data-c": c }, camadas.teclas);
+      const canto = { x: x - TECLA / 2, width: TECLA, height: TECLA, rx: 7 };
+      noSvg("rect", { ...canto, class: "sombra", y: y - TECLA / 2 + 2 }, g);
+      noSvg("rect", { ...canto, class: "tecla", y: y - TECLA / 2 }, g);
+      noSvg("text", { class: "letra", x, y }, g).textContent = letra;
     }));
     estado.camadas = camadas;
   }
@@ -224,8 +231,8 @@
     el.contagem.textContent = `${estado.achadas.size}/${LISTA.length}`;
   }
 
-  function letraEm(r, c) {
-    return el.grade.querySelector(`.letra[data-r="${r}"][data-c="${c}"]`);
+  function casa(r, c) {
+    return el.grade.querySelector(`.celula[data-r="${r}"][data-c="${c}"]`);
   }
 
   function caminho(a, b) {
@@ -235,14 +242,12 @@
   }
 
   function limparSelecao() {
-    estado.camadas.selecao.querySelectorAll(".selecao, .ancora").forEach(n => n.remove());
-    el.grade.querySelectorAll(".na-selecao").forEach(n => n.classList.remove("na-selecao"));
+    el.grade.querySelectorAll(".na-selecao, .ancora").forEach(n => n.classList.remove("na-selecao", "ancora"));
   }
 
-  function mostrarSelecao(a, b, classe = "selecao") {
+  function mostrarSelecao(a, b, classe = "na-selecao") {
     limparSelecao();
-    marca(a, b, classe, estado.camadas.selecao);
-    if (classe === "selecao") caminho(a, b).forEach(p => letraEm(p.r, p.c).classList.add("na-selecao"));
+    caminho(a, b).forEach(p => casa(p.r, p.c).classList.add(classe));
   }
 
   // ---------- placar e tempo ----------
@@ -347,7 +352,6 @@
     } else {
       estado.ancora = { r: a.r, c: a.c };
       mostrarSelecao(a, a, "ancora");
-      letraEm(a.r, a.c).classList.add("na-selecao");
     }
   }
 
@@ -362,16 +366,21 @@
 
     if (palavra) {
       estado.achadas.add(palavra.texto);
-      marca(a, b, "achada", estado.camadas.achadas, palavra.cor);
-      caminho(a, b).forEach(p => letraEm(p.r, p.c).classList.add("achada"));
+      // Letra compartilhada por duas palavras fica com a cor da última achada.
+      caminho(a, b).forEach(p => {
+        const n = casa(p.r, p.c);
+        n.classList.add("achada");
+        n.style.setProperty("--cor", palavra.cor);
+      });
       el.banco.querySelector(`[data-texto="${palavra.texto}"]`).classList.add("achada");
       desenharContagem();
       mudarPontos(REGRAS.pontosAcerto);
       if (estado.achadas.size === LISTA.length) vencer();
       else tocar(SONS.acerto);
     } else {
-      const errada = marca(a, b, "errada", estado.camadas.selecao);
-      setTimeout(() => errada.remove(), 650);
+      const erradas = caminho(a, b).map(p => casa(p.r, p.c));
+      erradas.forEach(n => n.classList.add("errada"));
+      setTimeout(() => erradas.forEach(n => n.classList.remove("errada")), 650);
       mudarPontos(REGRAS.pontosErro);
       tocar(SONS.erro);
     }
@@ -477,7 +486,7 @@
     for (const p of faltaram) {
       const { r, c, dr, dc } = estado.posicoes[p.texto];
       const fim = { r: r + dr * (p.texto.length - 1), c: c + dc * (p.texto.length - 1) };
-      marca({ r, c }, fim, "faltou", estado.camadas.achadas);
+      marca({ r, c }, fim, "faltou", estado.camadas.marcas);
       el.banco.querySelector(`[data-texto="${p.texto}"]`).classList.add("faltou");
     }
 
@@ -510,9 +519,15 @@
     if (ev.key === "Escape" && estado.ancora) { estado.ancora = null; limparSelecao(); }
   });
 
-  // Girou o aparelho antes de começar: refaz a grade no formato certo.
-  RETRATO.addEventListener("change", () => {
-    if (el.palco.classList.contains("esperando")) telaInicial();
+  // Girou o aparelho ou mudou o tamanho da janela antes de começar: refaz a grade no formato certo.
+  let esperaResize = null;
+  window.addEventListener("resize", () => {
+    clearTimeout(esperaResize);
+    esperaResize = setTimeout(() => {
+      const [colunas, linhas] = dimensoes();
+      const mudou = colunas !== estado.colunas || linhas !== estado.linhas;
+      if (mudou && el.palco.classList.contains("esperando")) telaInicial();
+    }, 200);
   });
 
   desenharBotaoSom();
