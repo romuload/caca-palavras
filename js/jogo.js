@@ -165,13 +165,10 @@
     return { letras, posicoes };
   }
 
-  // O formato da grade acompanha a largura disponível: a original 25×18 quando cabe,
-  // em pé (18×25) em telas médias e 14×20 nos celulares estreitos.
+  // Mesma grade em todos os aparelhos: deitada (16×14) quando há largura, em pé (14×16) nas telas estreitas.
   function dimensoes() {
-    const largura = el.grade.parentElement.clientWidth;
-    if (largura >= 560) return [REGRAS.colunas, REGRAS.linhas];
-    if (largura >= 400) return [REGRAS.linhas, REGRAS.colunas];
-    return [REGRAS.pequena.colunas, REGRAS.pequena.linhas];
+    const deitada = el.grade.parentElement.clientWidth >= 480;
+    return deitada ? [REGRAS.colunas, REGRAS.linhas] : [REGRAS.linhas, REGRAS.colunas];
   }
 
   function gerarGrade() {
